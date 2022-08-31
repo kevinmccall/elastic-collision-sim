@@ -1,6 +1,30 @@
-const canvas = document.getElementById("screen");
-const ctx = canvas.getContext("2d");
-let drawnObjects = [];
+const canvas = document.getElementById("screen") as HTMLCanvasElement;
+const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
+let drawnObjects = Array<IUpdatable>();
+
+interface IUpdatable {
+    update(delta: number): void;
+}
+
+interface IRectangle {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+}
+
+interface IPoint {
+    x: number;
+    y: number;
+}
+
+function getRightSide(rect: IRectangle) {
+    return rect.x + rect.width;
+}
+
+function getBottomSide(rect: IRectangle) {
+    return rect.y + rect.height;
+}
 
 const CANVAS_WIDTH = 800;
 const CANVAS_HEIGHT = 600;
@@ -12,52 +36,74 @@ const CALEB_MAX_SPEED = 100;
 const CALEB_SPLIT_NUM = 2;
 const CALEB_STARTING_MASS = 100;
 
-let mouseX, mouseY;
-
 function resizeCanvas() {
-    canvas.width = canvasWidth;
-    canvas.height = canvasHeight;
+    canvas.width = CANVAS_WIDTH;
+    canvas.height = CANVAS_HEIGHT;
 }
 
 resizeCanvas();
 
-function getRandomInt(max) {
+function getRandomInt(max: number) {
     return Math.floor(Math.random() * max);
 }
 
-function isPointInRect(pointX, pointY, rectPosX, rectPosY, rectWidth, rectHeight) {
-    return rectPosX < pointX && pointX < rectWidth && rectPosY < pointY && pointY < rectHeight;
+function isPointInRect(point: IPoint, rect: IRectangle) {
+    return rect.x < point.x && point.x < getRightSide(rect) && rect.y < point.y && point.y < getBottomSide(rect);
 }
 
-function AABB(rect1PosX, rect1PosY, rect1Width, rect1Height, rect2PosX, rect2PosY, rect2Width, rect2Height) {
-    return rect1PosX < rect2Width && rect1Width > rect2PosX && rect1PosY < rect2Height && rect1Height > rect2PosY;
+function AABB(rect1: IRectangle, rect2: IRectangle) {
+    return (
+        rect1.x < getBottomSide(rect2) &&
+        getRightSide(rect1) > rect2.x &&
+        rect1.y < getBottomSide(rect2) &&
+        getBottomSide(rect1) > rect1.y
+    );
 }
 
-function BouncyObject(imagePath, width = 100, height = 100) {
-    this.img = new Image(width, height);
-    this.img.src = imagePath;
-    this.x = 0;
-    this.y = 0;
-    this.dx = 1;
-    this.dy = 1;
-    this.mass = calebStartingMass;
-    this.width = width;
-    this.height = height;
-    this.rightSide = this.x + this.width;
-    this.bottomSide = this.y + this.height;
+class BouncyObject {
+    img: HTMLImageElement;
+    x: number;
+    y: number;
+    dx: number;
+    dy: number;
+    mass: number;
+    width: number;
+    height: number;
 
-    this.draw = () => {
+    constructor(imagePath: string, width = CALEB_WIDTH, height = CALEB_HEIGHT, mass: number = CALEB_STARTING_MASS) {
+        this.img = new Image(width, height);
+        this.img.src = imagePath;
+        this.img.onload = this.draw;
+        this.x = 0;
+        this.y = 0;
+        this.dx = 1;
+        this.dy = 1;
+        this.mass = mass;
+        this.width = width;
+        this.height = height;
+    }
+
+    getBottomSide() {
+        return this.y + this.height;
+    }
+    getRightSide() {
+        return this.x + this.width;
+    }
+
+    draw() {
         ctx.drawImage(this.img, this.x, this.y, this.width, this.height);
-    };
+    }
 
-    this.img.onload = this.draw;
+    checkCollisions(delta: number) {
+        this.canvas_collisions();
+    }
 
-    this.checkCollisions = (delta) => {
-        if (this.bottomSide > canvas.height) {
+    canvas_collisions() {
+        if (this.getBottomSide() > canvas.height) {
             this.dy *= -1;
             this.y = canvas.height - this.height;
         }
-        if (this.rightSide > canvas.width) {
+        if (this.getRightSide() > canvas.width) {
             this.dx *= -1;
             this.x = canvas.width - this.width;
         }
@@ -69,131 +115,24 @@ function BouncyObject(imagePath, width = 100, height = 100) {
             this.dy *= -1;
             this.y = 0;
         }
-
-        let oldX = this.x - this.dx * delta;
-        let oldY = this.y - this.dy * delta;
-
-        drawnObjects
-            .filter((ob) => ob != this)
-            .forEach((ob) => {
-                if (
-                    AABB(
-                        this.x,
-                        oldY,
-                        this.x + this.width,
-                        oldY + this.height,
-                        ob.x,
-                        ob.y,
-                        ob.x + ob.width,
-                        ob.y + ob.height
-                    )
-                ) {
-                    this.dx *= -1;
-                    ob.dx *= -1;
-                    this.x = oldX;
-                    return;
-                }
-                if (
-                    AABB(
-                        oldX,
-                        this.y,
-                        oldX + this.width,
-                        this.y + this.height,
-                        ob.x,
-                        ob.y,
-                        ob.x + ob.width,
-                        ob.y + ob.height
-                    )
-                ) {
-                    this.dy *= -1;
-                    ob.dy *= -1;
-                    this.y = oldY;
-                    return;
-                }
-            });
-    };
-
-    this.sussyCollisions = (delta) => {
-        drawnObjects
-            .filter((ob) => ob != this)
-            .forEach((ob) => {
-                if (
-                    AABB(
-                        this.x,
-                        this.y,
-                        this.x + this.width,
-                        this.y + this.height,
-                        ob.x,
-                        ob.y,
-                        ob.x + ob.width,
-                        ob.y + ob.height
-                    )
-                ) {
-                    objXAverage = (ob.x + ob.width) / 2;
-                    objYAverage = (ob.y + ob.height) / 2;
-                    selfXAverage = (self.x + self.width) / 2;
-                    selfYAverage = (self.y + self.height) / 2;
-                    let xDiff = objXAverage - selfXAverage;
-                    let yDiff = objYAverage - selfYAverage;
-
-                    if (Math.abs(xDiff) < Math.abs(yDiff)) {
-                        if (xDiff > 0) {
-                            this.dx *= -1;
-                            this.x = ob.x - objXAverage;
-                        } else {
-                            this.dx *= -1;
-                            this.x = ob.x + objXAverage;
-                        }
-                    } else {
-                        if (yDiff > 0) {
-                            this.dy *= -1;
-                            this.y = ob.y + objYAverage;
-                        } else {
-                            this.dy *= -1;
-                            this.y = ob.y - objYAverage;
-                        }
-                    }
-                }
-            });
-        if (this.bottomSide > canvas.height) {
-            this.dy *= -1;
-            this.y = canvas.height - this.height;
-        }
-        if (this.rightSide > canvas.width) {
-            this.dx *= -1;
-            this.x = canvas.width - this.width;
-        }
-        if (this.x < 0) {
-            this.dx *= -1;
-            this.x = 0;
-        }
-        if (this.y < 0) {
-            this.dy *= -1;
-            this.y = 0;
-        }
-    };
-
-    this.update = (delta) => {
+    }
+    update(delta: number) {
         this.x += this.dx * delta;
         this.y += this.dy * delta;
-        this.rightSide = this.x + this.width;
-        this.bottomSide = this.y + this.height;
         this.checkCollisions(delta);
-
         this.draw();
-    };
+    }
 }
 
 function init() {
-    for (i = 0; i < calebNum; i++) {
+    for (let i = 0; i < CALEB_NUM; i++) {
         const randX = getRandomInt(canvas.width);
         const randY = getRandomInt(canvas.height);
-        const caleb = new BouncyObject("https://erakijeff.github.io/caleb.webp", calebWidth, calebHeight);
+        const caleb = new BouncyObject("https://erakijeff.github.io/caleb.webp", CALEB_WIDTH, CALEB_HEIGHT);
         caleb.x = randX;
         caleb.y = randY;
-        caleb.name = "Caleb" + i;
-        caleb.dx = Math.random() * calebMaxSpeed + calebMinSpeed;
-        caleb.dy = Math.random() * calebMaxSpeed + calebMinSpeed;
+        caleb.dx = Math.random() * CALEB_MAX_SPEED + CALEB_MIN_SPEED;
+        caleb.dy = Math.random() * CALEB_MAX_SPEED + CALEB_MIN_SPEED;
 
         if (getRandomInt(2) == 0) {
             caleb.dx *= -1;
@@ -203,43 +142,18 @@ function init() {
         }
         drawnObjects.push(caleb);
     }
-
-    canvas.onmousedown = (e) => {
-        drawnObjects.forEach((obj) => {
-            if (isPointInRect(e.offsetX, e.offsetY, obj.x, obj.y, obj.x + obj.width, obj.y + obj.height)) {
-                drawnObjects = drawnObjects.filter((o) => o != obj);
-                mitosis(obj);
-            }
-        });
-    };
 }
 init();
 
 let old = new Date().getTime();
 
-function mitosis(obj) {
-    for (i = 0; i < calebSplitNum; i++) {
-        const caleb = new BouncyObject(
-            "https://erakijeff.github.io/caleb.webp",
-            obj.width / calebSplitNum,
-            obj.height / calebSplitNum
-        );
-        caleb.name = obj.name + ">" + i;
-        caleb.x = obj.x;
-        caleb.y = obj.y;
-        caleb.dx = obj.dx;
-        caleb.dy = obj.dy;
-        drawnObjects.push(caleb);
-    }
-}
-
 function update() {
-    current = new Date().getTime();
+    let current = new Date().getTime();
     let delta = (current - old) / 1000;
     old = current;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawnObjects.forEach((obj) => {
+    drawnObjects.forEach((obj: IUpdatable) => {
         obj.update(delta);
     });
     requestAnimationFrame(update);
