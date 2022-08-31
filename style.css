@@ -1,0 +1,16 @@
+* {
+    border: 0px;
+    margin: 0px;
+}
+
+body {
+    background-color: black;
+    background-size: cover;
+    height: 100%;
+    overflow: hidden;
+}
+
+#screen {
+    border: 4px solid white;
+    position: absolute;
+}
