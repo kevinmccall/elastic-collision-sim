@@ -76,8 +76,8 @@ class BouncyObject {
         this.img.onload = this.draw;
         this.x = 0;
         this.y = 0;
-        this.dx = 1;
-        this.dy = 1;
+        this.dx = 0;
+        this.dy = 0;
         this.mass = mass;
         this.width = width;
         this.height = height;
@@ -124,26 +124,40 @@ class BouncyObject {
     }
 }
 
-function init() {
-    for (let i = 0; i < CALEB_NUM; i++) {
-        const randX = getRandomInt(canvas.width);
-        const randY = getRandomInt(canvas.height);
-        const caleb = new BouncyObject("https://erakijeff.github.io/caleb.webp", CALEB_WIDTH, CALEB_HEIGHT);
-        caleb.x = randX;
-        caleb.y = randY;
-        caleb.dx = Math.random() * CALEB_MAX_SPEED + CALEB_MIN_SPEED;
-        caleb.dy = Math.random() * CALEB_MAX_SPEED + CALEB_MIN_SPEED;
+// function init() {
+//     for (let i = 0; i < CALEB_NUM; i++) {
+//         const randX = getRandomInt(canvas.width);
+//         const randY = getRandomInt(canvas.height);
+//         const caleb = new BouncyObject("https://erakijeff.github.io/caleb.webp", CALEB_WIDTH, CALEB_HEIGHT);
+//         caleb.x = randX;
+//         caleb.y = randY;
+//         caleb.dx = Math.random() * CALEB_MAX_SPEED + CALEB_MIN_SPEED;
+//         caleb.dy = Math.random() * CALEB_MAX_SPEED + CALEB_MIN_SPEED;
 
-        if (getRandomInt(2) == 0) {
-            caleb.dx *= -1;
-        }
-        if (getRandomInt(2) == 0) {
-            caleb.dy *= -1;
-        }
-        drawnObjects.push(caleb);
-    }
+//         if (getRandomInt(2) == 0) {
+//             caleb.dx *= -1;
+//         }
+//         if (getRandomInt(2) == 0) {
+//             caleb.dy *= -1;
+//         }
+//         drawnObjects.push(caleb);
+//     }
+// }
+
+function testInit() {
+    const CALEB1 = new BouncyObject("https://erakijeff.github.io/caleb.webp", CALEB_WIDTH, CALEB_HEIGHT);
+    const WALLOFFSET = 250;
+    const SPEED_MULTIPLYER = 4;
+    CALEB1.x = WALLOFFSET;
+    CALEB1.y = 400;
+    CALEB1.dx = CALEB_MIN_SPEED * SPEED_MULTIPLYER;
+    const CALEB2 = new BouncyObject("https://erakijeff.github.io/caleb.webp", CALEB_WIDTH, CALEB_HEIGHT);
+    CALEB2.x = canvas.width - WALLOFFSET - CALEB2.width;
+    CALEB2.y = 400;
+    CALEB2.dx = -CALEB_MIN_SPEED * SPEED_MULTIPLYER;
+    drawnObjects.push(CALEB1);
+    drawnObjects.push(CALEB2);
 }
-init();
 
 let old = new Date().getTime();
 
@@ -158,4 +172,7 @@ function update() {
     });
     requestAnimationFrame(update);
 }
+
+// init();
+testInit();
 update();
