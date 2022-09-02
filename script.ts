@@ -1,10 +1,10 @@
 const canvas = document.getElementById("screen") as HTMLCanvasElement;
 const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
-let drawnObjects = Array<IUpdatable>();
+let drawnObjects = Array<BouncyObject>();
 
-interface IUpdatable {
-    update(delta: number): void;
-}
+// interface IUpdatable {
+//     update(delta: number): void;
+// }
 
 interface IRectangle {
     x: number;
@@ -69,11 +69,15 @@ class BouncyObject {
     mass: number;
     width: number;
     height: number;
+    ready: boolean;
 
     constructor(imagePath: string, width = CALEB_WIDTH, height = CALEB_HEIGHT, mass: number = CALEB_STARTING_MASS) {
+        this.ready = false;
         this.img = new Image(width, height);
         this.img.src = imagePath;
-        this.img.onload = this.draw;
+        this.img.onload = () => {
+            this.ready = true;
+        };
         this.x = 0;
         this.y = 0;
         this.dx = 0;
@@ -96,6 +100,29 @@ class BouncyObject {
 
     checkCollisions(delta: number) {
         this.canvas_collisions();
+        drawnObjects
+            .filter((otherObject) => this != otherObject)
+            .forEach((otherObject) => {
+                if (AABB(this, otherObject)) {
+                    // this object's new velocity after elastic collision
+                    let v1FinalVelocityX =
+                        (2 * otherObject.mass * otherObject.dx + this.mass * this.dx - otherObject.mass * this.dx) /
+                        (this.mass + otherObject.mass);
+                    let v1FinalVelocityY =
+                        (2 * otherObject.mass * otherObject.dy + this.mass * this.dy - otherObject.mass * this.dy) /
+                        (this.mass + otherObject.mass);
+                    let v2FinalVelocityX =
+                        (2 * this.mass * this.dx + otherObject.mass * otherObject.dx - this.mass * otherObject.dx) /
+                        (this.mass + otherObject.mass);
+                    let v2FinalVelocityY =
+                        (2 * this.mass * this.dy + otherObject.mass * otherObject.dy - this.mass * otherObject.dy) /
+                        (this.mass + otherObject.mass);
+                    this.dx = v1FinalVelocityX;
+                    this.dy = v1FinalVelocityY;
+                    otherObject.dx = v2FinalVelocityX;
+                    otherObject.dy = v2FinalVelocityY;
+                }
+            });
     }
 
     canvas_collisions() {
@@ -117,6 +144,9 @@ class BouncyObject {
         }
     }
     update(delta: number) {
+        if (!this.ready) {
+            return;
+        }
         this.x += this.dx * delta;
         this.y += this.dy * delta;
         this.checkCollisions(delta);
@@ -167,7 +197,7 @@ function update() {
     old = current;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawnObjects.forEach((obj: IUpdatable) => {
+    drawnObjects.forEach((obj: BouncyObject) => {
         obj.update(delta);
     });
     requestAnimationFrame(update);
