@@ -22,8 +22,6 @@ function getBottomSide(rect: IRectangle) {
     return rect.y + rect.height;
 }
 
-const CANVAS_WIDTH = 800;
-const CANVAS_HEIGHT = 600;
 const CALEB_NUM = 4;
 const CALEB_WIDTH = 100;
 const CALEB_HEIGHT = 100;
@@ -33,11 +31,10 @@ const CALEB_SPLIT_NUM = 2;
 const CALEB_STARTING_MASS = 100;
 
 function resizeCanvas() {
-    canvas.width = CANVAS_WIDTH;
-    canvas.height = CANVAS_HEIGHT;
+    console.log("resized");
+    canvas.width = window.innerWidth - 10;
+    canvas.height = window.innerHeight - 10;
 }
-
-resizeCanvas();
 
 function getRandomInt(max: number) {
     return Math.floor(Math.random() * max);
@@ -194,6 +191,7 @@ class BouncyObject {
 }
 
 function init() {
+    resizeCanvas();
     for (let i = 0; i < CALEB_NUM; i++) {
         const randX = getRandomInt(canvas.width);
         const randY = getRandomInt(canvas.height);
@@ -201,6 +199,8 @@ function init() {
         createRandomCaleb(randX, randY, CALEB_WIDTH, CALEB_HEIGHT, CALEB_STARTING_MASS);
     }
     registerClicks();
+    registerResize();
+    update();
 }
 
 function createRandomCaleb(x: number, y: number, width: number, height: number, weight: number) {
@@ -241,6 +241,10 @@ function registerClicks() {
             }
         }
     });
+}
+
+function registerResize() {
+    window.addEventListener("resize", resizeCanvas);
 }
 
 function testInit() {
@@ -369,4 +373,3 @@ function update() {
 init();
 // testAABB();
 // testInit();
-update();
