@@ -94,6 +94,14 @@ class BouncyObject {
         return this.x + this.width;
     }
 
+    getMidX() {
+        return this.getRightSide() / 2;
+    }
+
+    getMidY() {
+        return this.getBottomSide() / 2;
+    }
+
     draw() {
         ctx.drawImage(this.img, this.x, this.y, this.width, this.height);
     }
@@ -103,28 +111,33 @@ class BouncyObject {
         drawnObjects
             .filter((otherObject) => this != otherObject)
             .forEach((otherObject) => {
-                if (AABB(this, otherObject)) {
-                    // derived using the elastic collision equations m1v1 + m2v2 = m1v1_hat + m2v2_hat and v1 + v1_hat = v2 + v2_hat
-                    // this object's new velocity after elastic collision
-                    let v1FinalVelocityX =
-                        (2 * otherObject.mass * otherObject.vx + this.mass * this.vx - otherObject.mass * this.vx) /
-                        (this.mass + otherObject.mass);
-                    let v1FinalVelocityY =
-                        (2 * otherObject.mass * otherObject.vy + this.mass * this.vy - otherObject.mass * this.vy) /
-                        (this.mass + otherObject.mass);
-                    // other object's new velocity after elastic collision
-                    let v2FinalVelocityX =
-                        (2 * this.mass * this.vx + otherObject.mass * otherObject.vx - this.mass * otherObject.vx) /
-                        (this.mass + otherObject.mass);
-                    let v2FinalVelocityY =
-                        (2 * this.mass * this.vy + otherObject.mass * otherObject.vy - this.mass * otherObject.vy) /
-                        (this.mass + otherObject.mass);
-                    this.vx = v1FinalVelocityX;
-                    this.vy = v1FinalVelocityY;
-                    otherObject.vx = v2FinalVelocityX;
-                    otherObject.vy = v2FinalVelocityY;
-                }
+                this.displaceCollision(otherObject);
+                this.elasticCollision(otherObject);
             });
+    }
+
+    elasticCollision(other: BouncyObject) {
+        if (AABB(this, other)) {
+            // derived using the elastic collision equations m1v1 + m2v2 = m1v1_hat + m2v2_hat and v1 + v1_hat = v2 + v2_hat
+            // this object's new velocity after elastic collision
+            let v1FinalVelocityX =
+                (2 * other.mass * other.vx + this.mass * this.vx - other.mass * this.vx) / (this.mass + other.mass);
+            let v1FinalVelocityY =
+                (2 * other.mass * other.vy + this.mass * this.vy - other.mass * this.vy) / (this.mass + other.mass);
+            // other object's new velocity after elastic collision
+            let v2FinalVelocityX =
+                (2 * this.mass * this.vx + other.mass * other.vx - this.mass * other.vx) / (this.mass + other.mass);
+            let v2FinalVelocityY =
+                (2 * this.mass * this.vy + other.mass * other.vy - this.mass * other.vy) / (this.mass + other.mass);
+            this.vx = v1FinalVelocityX;
+            this.vy = v1FinalVelocityY;
+            other.vx = v2FinalVelocityX;
+            other.vy = v2FinalVelocityY;
+        }
+    }
+
+    displaceCollision(other: BouncyObject) {
+        // TODO: Implement me
     }
 
     canvas_collisions() {
