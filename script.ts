@@ -2,10 +2,6 @@ const canvas = document.getElementById("screen") as HTMLCanvasElement;
 const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
 let drawnObjects = Array<BouncyObject>();
 
-// interface IUpdatable {
-//     update(delta: number): void;
-// }
-
 interface IRectangle {
     x: number;
     y: number;
@@ -263,23 +259,23 @@ function testInit() {
     drawnObjects.push(CALEB2);
 }
 
-function testInit2() {
-    const CALEB1 = new BouncyObject("https://erakijeff.github.io/5head.webp", CALEB_WIDTH, CALEB_HEIGHT);
-    const WALLOFFSET = 250;
-    CALEB1.x = WALLOFFSET;
-    CALEB1.y = 200;
-    const CALEB2 = new BouncyObject("https://erakijeff.github.io/caleb.webp", CALEB_WIDTH, CALEB_HEIGHT);
-    CALEB2.x = CALEB1.x + 10;
-    CALEB2.y = CALEB1.y + 51;
+// function testInit2() {
+//     const CALEB1 = new BouncyObject("https://erakijeff.github.io/5head.webp", CALEB_WIDTH, CALEB_HEIGHT);
+//     const WALLOFFSET = 250;
+//     CALEB1.x = WALLOFFSET;
+//     CALEB1.y = 200;
+//     const CALEB2 = new BouncyObject("https://erakijeff.github.io/caleb.webp", CALEB_WIDTH, CALEB_HEIGHT);
+//     CALEB2.x = CALEB1.x + 10;
+//     CALEB2.y = CALEB1.y + 51;
 
-    drawnObjects.push(CALEB1);
-    drawnObjects.push(CALEB2);
-    // add mouse testing
-    //document.addEventListener("mousemove", (ev) => {
-    //     CALEB2.x = ev.x;
-    //     CALEB2.y = ev.y;
-    // });
-}
+//     drawnObjects.push(CALEB1);
+//     drawnObjects.push(CALEB2);
+//     // add mouse testing
+//     //document.addEventListener("mousemove", (ev) => {
+//     //     CALEB2.x = ev.x;
+//     //     CALEB2.y = ev.y;
+//     // });
+// }
 
 let old = new Date().getTime();
 
