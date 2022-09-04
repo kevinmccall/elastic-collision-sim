@@ -64,8 +64,8 @@ class BouncyObject {
     img: HTMLImageElement;
     x: number;
     y: number;
-    dx: number;
-    dy: number;
+    vx: number;
+    vy: number;
     mass: number;
     width: number;
     height: number;
@@ -80,8 +80,8 @@ class BouncyObject {
         };
         this.x = 0;
         this.y = 0;
-        this.dx = 0;
-        this.dy = 0;
+        this.vx = 0;
+        this.vy = 0;
         this.mass = mass;
         this.width = width;
         this.height = height;
@@ -107,41 +107,41 @@ class BouncyObject {
                     // derived using the elastic collision equations m1v1 + m2v2 = m1v1_hat + m2v2_hat and v1 + v1_hat = v2 + v2_hat
                     // this object's new velocity after elastic collision
                     let v1FinalVelocityX =
-                        (2 * otherObject.mass * otherObject.dx + this.mass * this.dx - otherObject.mass * this.dx) /
+                        (2 * otherObject.mass * otherObject.vx + this.mass * this.vx - otherObject.mass * this.vx) /
                         (this.mass + otherObject.mass);
                     let v1FinalVelocityY =
-                        (2 * otherObject.mass * otherObject.dy + this.mass * this.dy - otherObject.mass * this.dy) /
+                        (2 * otherObject.mass * otherObject.vy + this.mass * this.vy - otherObject.mass * this.vy) /
                         (this.mass + otherObject.mass);
                     // other object's new velocity after elastic collision
                     let v2FinalVelocityX =
-                        (2 * this.mass * this.dx + otherObject.mass * otherObject.dx - this.mass * otherObject.dx) /
+                        (2 * this.mass * this.vx + otherObject.mass * otherObject.vx - this.mass * otherObject.vx) /
                         (this.mass + otherObject.mass);
                     let v2FinalVelocityY =
-                        (2 * this.mass * this.dy + otherObject.mass * otherObject.dy - this.mass * otherObject.dy) /
+                        (2 * this.mass * this.vy + otherObject.mass * otherObject.vy - this.mass * otherObject.vy) /
                         (this.mass + otherObject.mass);
-                    this.dx = v1FinalVelocityX;
-                    this.dy = v1FinalVelocityY;
-                    otherObject.dx = v2FinalVelocityX;
-                    otherObject.dy = v2FinalVelocityY;
+                    this.vx = v1FinalVelocityX;
+                    this.vy = v1FinalVelocityY;
+                    otherObject.vx = v2FinalVelocityX;
+                    otherObject.vy = v2FinalVelocityY;
                 }
             });
     }
 
     canvas_collisions() {
         if (this.getBottomSide() > canvas.height) {
-            this.dy *= -1;
+            this.vy *= -1;
             this.y = canvas.height - this.height;
         }
         if (this.getRightSide() > canvas.width) {
-            this.dx *= -1;
+            this.vx *= -1;
             this.x = canvas.width - this.width;
         }
         if (this.x < 0) {
-            this.dx *= -1;
+            this.vx *= -1;
             this.x = 0;
         }
         if (this.y < 0) {
-            this.dy *= -1;
+            this.vy *= -1;
             this.y = 0;
         }
     }
@@ -149,8 +149,8 @@ class BouncyObject {
         if (!this.ready) {
             return;
         }
-        this.x += this.dx * delta;
-        this.y += this.dy * delta;
+        this.x += this.vx * delta;
+        this.y += this.vy * delta;
         this.checkCollisions(delta);
         this.draw();
     }
@@ -182,11 +182,11 @@ function testInit() {
     const SPEED_MULTIPLYER = 4;
     CALEB1.x = WALLOFFSET;
     CALEB1.y = 400;
-    CALEB1.dx = CALEB_MIN_SPEED * SPEED_MULTIPLYER;
+    CALEB1.vx = CALEB_MIN_SPEED * SPEED_MULTIPLYER;
     const CALEB2 = new BouncyObject("https://erakijeff.github.io/caleb.webp", CALEB_WIDTH, CALEB_HEIGHT);
     CALEB2.x = canvas.width - WALLOFFSET - CALEB2.width;
     CALEB2.y = 400;
-    CALEB2.dx = -CALEB_MIN_SPEED * SPEED_MULTIPLYER;
+    CALEB2.vx = -CALEB_MIN_SPEED * SPEED_MULTIPLYER;
     CALEB2.mass = 10;
     drawnObjects.push(CALEB1);
     drawnObjects.push(CALEB2);
@@ -206,78 +206,78 @@ function update() {
     requestAnimationFrame(update);
 }
 
-function testAABB() {
-    {
-        let rectangle1: IRectangle = {
-            x: 0,
-            y: 0,
-            width: 5,
-            height: 5,
-        };
-        let rectangle2: IRectangle = {
-            x: 10,
-            y: 10,
-            width: 5,
-            height: 5,
-        };
-        if (AABB(rectangle1, rectangle2) == true) {
-            console.log("failed test 1");
-        }
-    }
-    {
-        let rectangle1: IRectangle = {
-            x: 0,
-            y: 0,
-            width: 5,
-            height: 5,
-        };
-        let rectangle2: IRectangle = {
-            x: 10,
-            y: 10,
-            width: 5,
-            height: 5,
-        };
-        if (AABB(rectangle2, rectangle1) == true) {
-            console.log("failed test 2");
-        }
-    }
-    {
-        let rectangle1: IRectangle = {
-            x: 0,
-            y: 10,
-            width: 5,
-            height: 5,
-        };
-        let rectangle2: IRectangle = {
-            x: 10,
-            y: 0,
-            width: 5,
-            height: 5,
-        };
-        if (AABB(rectangle1, rectangle2) == true) {
-            console.log("failed test 3");
-        }
-    }
-    {
-        let rectangle1: IRectangle = {
-            x: 0,
-            y: 10,
-            width: 5,
-            height: 5,
-        };
-        let rectangle2: IRectangle = {
-            x: 10,
-            y: 0,
-            width: 5,
-            height: 5,
-        };
-        if (AABB(rectangle2, rectangle1) == true) {
-            console.log("failed test 4");
-        }
-    }
-}
+// function testAABB() {
+//     {
+//         let rectangle1: IRectangle = {
+//             x: 0,
+//             y: 0,
+//             width: 5,
+//             height: 5,
+//         };
+//         let rectangle2: IRectangle = {
+//             x: 10,
+//             y: 10,
+//             width: 5,
+//             height: 5,
+//         };
+//         if (AABB(rectangle1, rectangle2) == true) {
+//             console.log("failed test 1");
+//         }
+//     }
+//     {
+//         let rectangle1: IRectangle = {
+//             x: 0,
+//             y: 0,
+//             width: 5,
+//             height: 5,
+//         };
+//         let rectangle2: IRectangle = {
+//             x: 10,
+//             y: 10,
+//             width: 5,
+//             height: 5,
+//         };
+//         if (AABB(rectangle2, rectangle1) == true) {
+//             console.log("failed test 2");
+//         }
+//     }
+//     {
+//         let rectangle1: IRectangle = {
+//             x: 0,
+//             y: 10,
+//             width: 5,
+//             height: 5,
+//         };
+//         let rectangle2: IRectangle = {
+//             x: 10,
+//             y: 0,
+//             width: 5,
+//             height: 5,
+//         };
+//         if (AABB(rectangle1, rectangle2) == true) {
+//             console.log("failed test 3");
+//         }
+//     }
+//     {
+//         let rectangle1: IRectangle = {
+//             x: 0,
+//             y: 10,
+//             width: 5,
+//             height: 5,
+//         };
+//         let rectangle2: IRectangle = {
+//             x: 10,
+//             y: 0,
+//             width: 5,
+//             height: 5,
+//         };
+//         if (AABB(rectangle2, rectangle1) == true) {
+//             console.log("failed test 4");
+//         }
+//     }
+// }
 
 // init();
-testAABB();
+// testAABB();
 testInit();
 update();
