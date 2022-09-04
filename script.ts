@@ -56,7 +56,7 @@ function AABB(rect1: IRectangle, rect2: IRectangle) {
         rect1.x < getRightSide(rect2) &&
         getRightSide(rect1) > rect2.x &&
         rect1.y < getBottomSide(rect2) &&
-        getBottomSide(rect1) > rect1.y
+        getBottomSide(rect1) > rect2.y
     );
 }
 
@@ -70,6 +70,7 @@ class BouncyObject {
     width: number;
     height: number;
     ready: boolean;
+    hasCollisionBeenChecked = false;
 
     constructor(imagePath: string, width = CALEB_WIDTH, height = CALEB_HEIGHT, mass: number = CALEB_STARTING_MASS) {
         this.ready = false;
@@ -111,33 +112,60 @@ class BouncyObject {
         drawnObjects
             .filter((otherObject) => this != otherObject)
             .forEach((otherObject) => {
-                this.displaceCollision(otherObject);
-                this.elasticCollision(otherObject);
+                if (!(this.hasCollisionBeenChecked && otherObject.hasCollisionBeenChecked) && AABB(this, otherObject)) {
+                    this.hasCollisionBeenChecked = true;
+                    otherObject.hasCollisionBeenChecked = true;
+                    this.displaceCollision(otherObject);
+                    this.elasticCollision(otherObject);
+                }
             });
     }
 
     elasticCollision(other: BouncyObject) {
-        if (AABB(this, other)) {
-            // derived using the elastic collision equations m1v1 + m2v2 = m1v1_hat + m2v2_hat and v1 + v1_hat = v2 + v2_hat
-            // this object's new velocity after elastic collision
-            let v1FinalVelocityX =
-                (2 * other.mass * other.vx + this.mass * this.vx - other.mass * this.vx) / (this.mass + other.mass);
-            let v1FinalVelocityY =
-                (2 * other.mass * other.vy + this.mass * this.vy - other.mass * this.vy) / (this.mass + other.mass);
-            // other object's new velocity after elastic collision
-            let v2FinalVelocityX =
-                (2 * this.mass * this.vx + other.mass * other.vx - this.mass * other.vx) / (this.mass + other.mass);
-            let v2FinalVelocityY =
-                (2 * this.mass * this.vy + other.mass * other.vy - this.mass * other.vy) / (this.mass + other.mass);
-            this.vx = v1FinalVelocityX;
-            this.vy = v1FinalVelocityY;
-            other.vx = v2FinalVelocityX;
-            other.vy = v2FinalVelocityY;
-        }
+        // derived using the elastic collision equations m1v1 + m2v2 = m1v1_hat + m2v2_hat and v1 + v1_hat = v2 + v2_hat
+        // this object's new velocity after elastic collision
+        let v1FinalVelocityX =
+            (2 * other.mass * other.vx + this.mass * this.vx - other.mass * this.vx) / (this.mass + other.mass);
+        let v1FinalVelocityY =
+            (2 * other.mass * other.vy + this.mass * this.vy - other.mass * this.vy) / (this.mass + other.mass);
+        // other object's new velocity after elastic collision
+        let v2FinalVelocityX =
+            (2 * this.mass * this.vx + other.mass * other.vx - this.mass * other.vx) / (this.mass + other.mass);
+        let v2FinalVelocityY =
+            (2 * this.mass * this.vy + other.mass * other.vy - this.mass * other.vy) / (this.mass + other.mass);
+        this.vx = v1FinalVelocityX;
+        this.vy = v1FinalVelocityY;
+        other.vx = v2FinalVelocityX;
+        other.vy = v2FinalVelocityY;
     }
 
+    /**
+     * Shifts us out of a collision if we end up inside of another object.
+     * @param other Other bouncy object that we are currently colldiing with.
+     */
     displaceCollision(other: BouncyObject) {
-        // TODO: Implement me
+        let xdiff = other.getMidX() - this.getMidX();
+        let ydiff = other.getMidY() - this.getMidY();
+        // TODO: probably need to normalize the value incase of wonkyness
+        if (Math.abs(xdiff) > Math.abs(ydiff)) {
+            // object is colliding more from the left/right
+            if (xdiff > 0) {
+                // other object is colliding with our right side
+                this.x = other.x - this.width;
+            } else {
+                // other object is colliding with our left side
+                this.x = other.getRightSide();
+            }
+        } else {
+            // object is colliding more from the top / bottom
+            if (ydiff > 0) {
+                // other object is colliding with our bottom side
+                this.y = other.y - this.height;
+            } else {
+                // other object is colliding with our top side
+                this.y = other.getBottomSide();
+            }
+        }
     }
 
     canvas_collisions() {
@@ -169,28 +197,58 @@ class BouncyObject {
     }
 }
 
-// function init() {
-//     for (let i = 0; i < CALEB_NUM; i++) {
-//         const randX = getRandomInt(canvas.width);
-//         const randY = getRandomInt(canvas.height);
-//         const caleb = new BouncyObject("https://erakijeff.github.io/caleb.webp", CALEB_WIDTH, CALEB_HEIGHT);
-//         caleb.x = randX;
-//         caleb.y = randY;
-//         caleb.dx = Math.random() * CALEB_MAX_SPEED + CALEB_MIN_SPEED;
-//         caleb.dy = Math.random() * CALEB_MAX_SPEED + CALEB_MIN_SPEED;
+function init() {
+    for (let i = 0; i < CALEB_NUM; i++) {
+        const randX = getRandomInt(canvas.width);
+        const randY = getRandomInt(canvas.height);
 
-//         if (getRandomInt(2) == 0) {
-//             caleb.dx *= -1;
-//         }
-//         if (getRandomInt(2) == 0) {
-//             caleb.dy *= -1;
-//         }
-//         drawnObjects.push(caleb);
-//     }
-// }
+        createRandomCaleb(randX, randY, CALEB_WIDTH, CALEB_HEIGHT, CALEB_STARTING_MASS);
+    }
+    registerClicks();
+}
+
+function createRandomCaleb(x: number, y: number, width: number, height: number, weight: number) {
+    const caleb = new BouncyObject("https://erakijeff.github.io/caleb.webp", width, height, weight);
+    caleb.x = x;
+    caleb.y = y;
+    caleb.vx = Math.random() * CALEB_MAX_SPEED + CALEB_MIN_SPEED;
+    caleb.vy = Math.random() * CALEB_MAX_SPEED + CALEB_MIN_SPEED;
+
+    if (getRandomInt(2) == 0) {
+        caleb.vx *= -1;
+    }
+    if (getRandomInt(2) == 0) {
+        caleb.vy *= -1;
+    }
+    if (getRandomInt(2) == 0) {
+        caleb.img.src = "https://erakijeff.github.io/5head.webp";
+    }
+    drawnObjects.push(caleb);
+}
+
+function registerClicks() {
+    document.addEventListener("mousedown", (event) => {
+        for (let i = 0; i < drawnObjects.length; i++) {
+            let point = {
+                x: event.x,
+                y: event.y,
+            };
+            let caleb = drawnObjects[i];
+            if (isPointInRect(point, caleb)) {
+                let newWidth = caleb.width / 2;
+                let newHeight = caleb.height / 2;
+                let newMass = caleb.mass / 2;
+                caleb.width = newWidth;
+                caleb.height = newHeight;
+                caleb.mass = newMass;
+                createRandomCaleb(caleb.x, caleb.y, newWidth, newHeight, newMass);
+            }
+        }
+    });
+}
 
 function testInit() {
-    const CALEB1 = new BouncyObject("https://erakijeff.github.io/caleb.webp", CALEB_WIDTH, CALEB_HEIGHT);
+    const CALEB1 = new BouncyObject("https://erakijeff.github.io/5head.webp", CALEB_WIDTH, CALEB_HEIGHT);
     const WALLOFFSET = 250;
     const SPEED_MULTIPLYER = 4;
     CALEB1.x = WALLOFFSET;
@@ -205,6 +263,24 @@ function testInit() {
     drawnObjects.push(CALEB2);
 }
 
+function testInit2() {
+    const CALEB1 = new BouncyObject("https://erakijeff.github.io/5head.webp", CALEB_WIDTH, CALEB_HEIGHT);
+    const WALLOFFSET = 250;
+    CALEB1.x = WALLOFFSET;
+    CALEB1.y = 200;
+    const CALEB2 = new BouncyObject("https://erakijeff.github.io/caleb.webp", CALEB_WIDTH, CALEB_HEIGHT);
+    CALEB2.x = CALEB1.x + 10;
+    CALEB2.y = CALEB1.y + 51;
+
+    drawnObjects.push(CALEB1);
+    drawnObjects.push(CALEB2);
+    // add mouse testing
+    //document.addEventListener("mousemove", (ev) => {
+    //     CALEB2.x = ev.x;
+    //     CALEB2.y = ev.y;
+    // });
+}
+
 let old = new Date().getTime();
 
 function update() {
@@ -216,6 +292,10 @@ function update() {
     drawnObjects.forEach((obj: BouncyObject) => {
         obj.update(delta);
     });
+    drawnObjects.forEach((obj: BouncyObject) => {
+        obj.hasCollisionBeenChecked = false;
+    });
+
     requestAnimationFrame(update);
 }
 
@@ -290,7 +370,7 @@ function update() {
 //     }
 // }
 
-// init();
+init();
 // testAABB();
-testInit();
+// testInit();
 update();
