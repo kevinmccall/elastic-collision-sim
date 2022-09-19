@@ -1,6 +1,7 @@
 import { Entity } from "./entity";
+import { AABB } from "./utils";
 
-class Engine {
+export class Engine {
     canvas: HTMLCanvasElement;
     ctx: CanvasRenderingContext2D;
     updatedObjects: Array<Entity>;
@@ -25,6 +26,18 @@ class Engine {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.updatedObjects.forEach((obj: Entity) => {
             obj.update(delta);
+            //check collisions
+            this.updatedObjects.forEach((entity) => {
+                this.updatedObjects
+                    .filter((otherEntity) => otherEntity != entity)
+                    .forEach((otherEntity) => {
+                        if (AABB(entity, otherEntity)) {
+                            entity.onCollision(otherEntity);
+                        }
+                    });
+            });
+            obj.lateUpdate(delta);
+            obj.draw(this.ctx);
         });
         this.updatedObjects.forEach((obj: Entity) => {
             obj.hasCollisionBeenChecked = false;
