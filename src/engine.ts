@@ -12,6 +12,8 @@ export class Engine {
         this.ctx = this.canvas.getContext("2d") as CanvasRenderingContext2D;
         this.updatedObjects = Array<Entity>();
         this.old = new Date().getTime();
+        this.canvas.width = window.innerWidth - 10;
+        this.canvas.height = window.innerHeight - 10;
     }
 
     registerEntity(entity: Entity) {
