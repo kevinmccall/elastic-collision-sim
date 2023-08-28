@@ -1,6 +1,5 @@
 import { Engine } from './engine';
 import { BouncyObject } from './BouncyObject';
-import { IRectangle } from './interfaces';
 
 const CALEB_NUM = 4;
 const CALEB_WIDTH = 100;
@@ -26,8 +25,7 @@ let caleb = new BouncyObject(
   CALEB_IMG_PATH,
   CALEB_WIDTH,
   CALEB_HEIGHT,
-  CALEB_STARTING_MASS,
-  CANVAS_BOUNDS
+  CALEB_STARTING_MASS
 );
 caleb.x = 100;
 caleb.y = 100;
@@ -37,8 +35,7 @@ let caleb2 = new BouncyObject(
   CALEB_IMG_PATH,
   CALEB_WIDTH,
   CALEB_HEIGHT,
-  CALEB_STARTING_MASS,
-  CANVAS_BOUNDS
+  CALEB_STARTING_MASS
 );
 caleb2.x = 400;
 caleb2.y = 100;
