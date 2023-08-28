@@ -1,73 +1,38 @@
-// function testAABB() {
-//     {
-//         let rectangle1: IRectangle = {
-//             x: 0,
-//             y: 0,
-//             width: 5,
-//             height: 5,
-//         };
-//         let rectangle2: IRectangle = {
-//             x: 10,
-//             y: 10,
-//             width: 5,
-//             height: 5,
-//         };
-//         if (AABB(rectangle1, rectangle2) == true) {
-//             console.log("failed test 1");
-//         }
-//     }
-//     {
-//         let rectangle1: IRectangle = {
-//             x: 0,
-//             y: 0,
-//             width: 5,
-//             height: 5,
-//         };
-//         let rectangle2: IRectangle = {
-//             x: 10,
-//             y: 10,
-//             width: 5,
-//             height: 5,
-//         };
-//         if (AABB(rectangle2, rectangle1) == true) {
-//             console.log("failed test 2");
-//         }
-//     }
-//     {
-//         let rectangle1: IRectangle = {
-//             x: 0,
-//             y: 10,
-//             width: 5,
-//             height: 5,
-//         };
-//         let rectangle2: IRectangle = {
-//             x: 10,
-//             y: 0,
-//             width: 5,
-//             height: 5,
-//         };
-//         if (AABB(rectangle1, rectangle2) == true) {
-//             console.log("failed test 3");
-//         }
-//     }
-//     {
-//         let rectangle1: IRectangle = {
-//             x: 0,
-//             y: 10,
-//             width: 5,
-//             height: 5,
-//         };
-//         let rectangle2: IRectangle = {
-//             x: 10,
-//             y: 0,
-//             width: 5,
-//             height: 5,
-//         };
-//         if (AABB(rectangle2, rectangle1) == true) {
-//             console.log("failed test 4");
-//         }
-//     }
-// }
+import { AABB, Rectangle } from '../src/utils';
+import { expect } from 'chai';
+
+describe('Rectangles should not collide', function () {
+  it('should return false 1', function () {
+    let rectangle1: Rectangle = {
+      x: 0,
+      y: 0,
+      width: 5,
+      height: 5,
+    };
+    let rectangle2: Rectangle = {
+      x: 10,
+      y: 10,
+      width: 5,
+      height: 5,
+    };
+    expect(AABB(rectangle1, rectangle2)).to.be.false;
+  });
+  it('should return false 2', function () {
+    let rectangle1: Rectangle = {
+      x: 0,
+      y: 10,
+      width: 5,
+      height: 5,
+    };
+    let rectangle2: Rectangle = {
+      x: 10,
+      y: 0,
+      width: 5,
+      height: 5,
+    };
+    expect(AABB(rectangle1, rectangle2)).to.be.false;
+  });
+});
 
 // function testInit() {
 //     const CALEB1 = new BouncyObject("https://erakijeff.github.io/5head.webp", CALEB_WIDTH, CALEB_HEIGHT);
@@ -102,6 +67,3 @@
 //     //     CALEB2.y = ev.y;
 //     // });
 // }
-
-// testAABB();
-// testInit();

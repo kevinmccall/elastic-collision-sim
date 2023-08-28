@@ -52,4 +52,6 @@ export {
   getRandomInt,
   isPointInRect,
   AABB,
+  Rectangle,
+  Point,
 };
