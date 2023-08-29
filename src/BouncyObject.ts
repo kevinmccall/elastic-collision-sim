@@ -9,7 +9,6 @@ export class BouncyObject implements Rectangle {
   mass: number;
   width: number;
   height: number;
-  ready: boolean;
 
   constructor(
     img: CanvasImageSource,
@@ -25,7 +24,6 @@ export class BouncyObject implements Rectangle {
     this.mass = mass;
     this.width = width;
     this.height = height;
-    this.ready = false;
   }
 
   getBottomSide() {
@@ -115,9 +113,7 @@ export class BouncyObject implements Rectangle {
   }
 
   update(delta: number) {
-    if (this.ready) {
-      this.x += this.vx * delta;
-      this.y += this.vy * delta;
-    }
+    this.x += this.vx * delta;
+    this.y += this.vy * delta;
   }
 }

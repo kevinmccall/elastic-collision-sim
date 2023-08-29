@@ -20,6 +20,9 @@ export class Engine {
   }
 
   handleMouseClick(event: MouseEvent) {
+    if (!this.loaded) {
+      return;
+    }
     this.updatedObjects.forEach((obj) => {
       let toRemove = [];
       let toAdd = [];
@@ -35,6 +38,9 @@ export class Engine {
   }
 
   update() {
+    if (!this.loaded) {
+      return;
+    }
     let current = new Date().getTime();
     let delta = (current - this.old) / 1000;
     this.old = current;
