@@ -20,27 +20,31 @@ const CANVAS_BOUNDS = {
   height: CANVAS_HEIGHT,
 };
 
-const ENGINE = new Engine();
-let caleb = new BouncyObject(
-  CALEB_IMG_PATH,
-  CALEB_WIDTH,
-  CALEB_HEIGHT,
-  CALEB_STARTING_MASS
-);
-caleb.x = 100;
-caleb.y = 100;
-caleb.vx = 100;
+let calebImg = new Image();
+calebImg.src = CALEB_IMG_PATH;
+calebImg.onload = function () {
+  const ENGINE = new Engine();
+  let caleb = new BouncyObject(
+    calebImg,
+    CALEB_WIDTH,
+    CALEB_HEIGHT,
+    CALEB_STARTING_MASS
+  );
+  caleb.x = 100;
+  caleb.y = 100;
+  caleb.vx = 100;
 
-let caleb2 = new BouncyObject(
-  CALEB_IMG_PATH,
-  CALEB_WIDTH,
-  CALEB_HEIGHT,
-  CALEB_STARTING_MASS
-);
-caleb2.x = 400;
-caleb2.y = 100;
-caleb2.vx = -100;
-ENGINE.registerEntity(caleb);
-ENGINE.registerEntity(caleb2);
+  let caleb2 = new BouncyObject(
+    calebImg,
+    CALEB_WIDTH,
+    CALEB_HEIGHT,
+    CALEB_STARTING_MASS
+  );
+  caleb2.x = 400;
+  caleb2.y = 100;
+  caleb2.vx = -100;
+  ENGINE.registerEntity(caleb);
+  ENGINE.registerEntity(caleb2);
 
-ENGINE.update();
+  ENGINE.update();
+};
